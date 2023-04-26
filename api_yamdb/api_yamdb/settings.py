@@ -21,6 +21,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -64,6 +66,8 @@ DATABASES = {
     }
 }
 
+# Custom User Model
+AUTH_USER_MODEL = 'reviews.CustomUser'
 
 # Password validation
 
