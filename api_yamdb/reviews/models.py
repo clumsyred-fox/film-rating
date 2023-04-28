@@ -89,7 +89,7 @@ class Genre(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
