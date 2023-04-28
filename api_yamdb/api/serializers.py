@@ -2,8 +2,50 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 
-from reviews.models import Comment, Review, Title
+from reviews.models import Comment, Review, Title, Category, Genre
 
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    """ Сериализатор категорий """
+    class Meta:
+        model = Category
+        fields = ['name', 'slug']
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    """ Сериализатор жанров """
+    class Meta:
+        model = Genre
+        fields = ['name', 'slug']
+
+
+class TitleGETSerializer(serializers.ModelSerializer):
+    """ Сериализатор вывода произведений """
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Title
+        fields = ['name', 'year', 'genre', 'category']
+
+
+class TitlePOSTSerializer(serializers.ModelSerializer):
+    """ Сериализатор создания произведений """
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all()
+    )
+
+    class Meta:
+        model = Title
+        fields = ['name', 'year', 'description', 'genre', 'category']
+        
 
 class ReviewSerializer(serializers.ModelSerializer):
     title = serializers.SlugRelatedField(

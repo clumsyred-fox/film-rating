@@ -1,12 +1,49 @@
+from rest_framework.mixins import (ListModelMixin,
+                                   CreateModelMixin,
+                                   DestroyModelMixin
+                                   )
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, permissions, status, viewsets
 
-from reviews.models import Category, Genre, Review, Title, CustomUser
-from .permissions import (IsAdminModeratorOwnerOrReadOnly)
-from .serializers import (CommentSerializer,
+from rest_framework.viewsets import GenericViewSet
+from .serializers import (CategorySerializer,
+                          GenreSerializer,
+                          TitleGETSerializer,
+                          TitlePOSTSerializer,
+                          CommentSerializer,
                           ReviewSerializer,
                           )
+from reviews.models import Category, Genre, Review, Title, CustomUser
+from .permissions import (IsAdminModeratorOwnerOrReadOnly)
 
+
+class CreateListDestroyViewSet(ListModelMixin,
+                               CreateModelMixin,
+                               DestroyModelMixin,
+                               GenericViewSet):
+    pass
+
+
+class CategoryViewSet(CreateListDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class GenreViewSet(CreateListDestroyViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+class TitleGETViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleGETSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return TitlePOSTSerializer
+        else:
+            return TitleGETSerializer
+            
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
