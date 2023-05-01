@@ -135,7 +135,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if value.lower() == 'me':
             raise serializers.ValidationError("Username 'me' is not valid")
+        if len(value) > 150 or value != r'^[-a-zA-Z0-9_]+$':
+            raise serializers.ValidationError('Измените имя пользователя.')
         return value
+    
+    def validate_email(self, value):
+        if len(value) > 254:
+            raise serializers.ValidationError('Адрес должен быть короче.')
+        return value
+    
 
     class Meta:
         fields = ("username", "email")

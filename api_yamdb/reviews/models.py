@@ -21,11 +21,10 @@ class CustomUser(AbstractUser):
     ]
 
     username_validator = RegexValidator(
-        r'^[\w.@+-]+\z',
+        r'^[\\w.@+-]+\\z'
         'Required. 150 characters or fewer.'
         'Letters, digits and @/./+/-/_ only.'
     )
-    last_name = models.CharField(max_length=150)
     username = models.CharField(
         verbose_name='Никнейм',
         max_length=150,
