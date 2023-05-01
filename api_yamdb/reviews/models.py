@@ -11,16 +11,21 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 class CustomUser(AbstractUser):
     """ Кастомная модель пользователя. """
-    CHOICES = (
-        ('USER', 'User'),
-        ('ADMIN', 'Admin'),
-        ('MODERATOR', 'Moderator'),
-    )
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    CHOICES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
+
     username_validator = RegexValidator(
         r'^[\w.@+-]+\z',
         'Required. 150 characters or fewer.'
         'Letters, digits and @/./+/-/_ only.'
     )
+    last_name = models.CharField(max_length=150)
     username = models.CharField(
         verbose_name='Никнейм',
         max_length=150,
@@ -40,10 +45,25 @@ class CustomUser(AbstractUser):
         default='USER',
     )
     email = models.EmailField(max_length=254, unique=True)
+    
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ['username']
+        constraints = [
+            models.CheckConstraint(
+                check=~models.Q(username__iexact="me"),
+                name="username_is_not_me"
+            )
+        ]
 
 
 class Category(models.Model):
@@ -127,6 +147,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -149,7 +170,7 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews'
     )
-    score = models.PositiveSmallIntegerField(
+    rating = models.PositiveSmallIntegerField(
         verbose_name='Рейтинг',
         validators=[
             MinValueValidator(1, 'Оцените от 1 до 10'),
