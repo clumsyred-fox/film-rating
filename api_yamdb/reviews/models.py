@@ -149,3 +149,12 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text[:50]
+
+
+class GenreTitle(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE)
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE)
