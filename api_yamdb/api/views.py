@@ -88,18 +88,20 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=["GET", "PATCH"],
         detail=False,
         url_path="me",
-        permission_classes=[permissions.IsAuthenticated])
+        permission_classes=[permissions.IsAuthenticated],
+        serializer_class = UserSerializer)
     def own_profile(self, request):
-        serializer = UserSerializer(request.user)
-        if request.method == "PATCH":
-            serializer = UserSerializer(
-                request.user,
-                data=request.data,
-                partial=True)
-            if serializer.is_valid():
-                serializer.validated_data['role'] = request.user.role
-                serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = self.request.user
+        if request.method == 'GET':
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        elif request.method == 'PATCH':
+            serializer = self.get_serializer(user, data=request.data,
+                                             partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.validated_data['role'] = request.user.role
+            serializer.save()
+            return Response(serializer.data)
 
 
 class CategoryViewSet(GetPostDeleteViewSet):
