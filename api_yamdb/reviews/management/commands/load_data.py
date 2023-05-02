@@ -1,3 +1,5 @@
+"""Import files."""
+
 import csv
 
 from django.core.management.base import BaseCommand, CommandError
@@ -18,6 +20,7 @@ DICT = {
 
 
 def csv_serializer(csv_data, model):
+    """CSV load."""
     objs = []
     for row in csv_data:
         for field in FOREIGN_KEY_FIELDS:
@@ -29,10 +32,12 @@ def csv_serializer(csv_data, model):
 
 
 class Command(BaseCommand):
-    """ Класс выполнения. """
+    """Класс выполнения."""
+
     help = 'Load data from csv file into the database'
 
     def handle(self, *args, **kwargs):
+        """Load files."""
         for model, file_name in DICT.items():
             try:
                 with open(CSV_PATH + file_name,
