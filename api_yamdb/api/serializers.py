@@ -5,23 +5,22 @@ from rest_framework.generics import get_object_or_404
 from reviews.models import Comment, Review, Title, Category, Genre
 
 
-
 class CategorySerializer(serializers.ModelSerializer):
-    """ Сериализатор категорий """
+    """ Сериализатор категорий. """
     class Meta:
         model = Category
         fields = ['name', 'slug']
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    """ Сериализатор жанров """
+    """ Сериализатор жанров. """
     class Meta:
         model = Genre
         fields = ['name', 'slug']
 
 
 class TitleGETSerializer(serializers.ModelSerializer):
-    """ Сериализатор вывода произведений """
+    """ Сериализатор вывода произведений. """
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
 
@@ -31,7 +30,7 @@ class TitleGETSerializer(serializers.ModelSerializer):
 
 
 class TitlePOSTSerializer(serializers.ModelSerializer):
-    """ Сериализатор создания произведений """
+    """ Сериализатор создания произведений. """
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Category.objects.all()
@@ -45,7 +44,7 @@ class TitlePOSTSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = ['name', 'year', 'description', 'genre', 'category']
-        
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     title = serializers.SlugRelatedField(
