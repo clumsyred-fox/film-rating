@@ -1,4 +1,5 @@
 from rest_framework import serializers
+import re
 from rest_framework.relations import SlugRelatedField
 from django.shortcuts import get_object_or_404
 from rest_framework.validators import UniqueValidator
@@ -10,43 +11,33 @@ from reviews.models import User, Category, Title, Genre,  Review, Comment
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(max_length = 150,
                                       regex=r'^[\w.@+-]',
-                                      validators=[UniqueValidator(queryset=User.objects.all())])
-    email = serializers.EmailField(max_length = 150,
-                                   validators=[UniqueValidator(queryset=User.objects.all())])
-
-    # first_name = serializers.CharField(max_length = 150)
-    # last_name = serializers.CharField(max_length = 150)
+                                      validators=[UniqueValidator(queryset=User.objects.all())]
+                                      )
+    email = serializers.EmailField(max_length = 254,
+                                   validators=[UniqueValidator(queryset=User.objects.all())]
+                                   )
 
     class Meta:
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
         model = User
 
-    def validate(self, data):
-        if data.get('username') != 'me':
-            return data
-        raise serializers.ValidationError(
-            'Поменяйте имя')
-
 
 class SignInSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length = 150,
-                                     validators=[
-                                        #  UniqueValidator(queryset=User.objects.all()),
-                                         RegexValidator(regex=r'^[\w.@+-]+\Z'),])
-    email = serializers.EmailField(max_length = 150, 
-                                #    validators=[UniqueValidator(queryset=User.objects.all())]
-                                   )
+    username = serializers.RegexField(
+        max_length = 150,
+        regex=r'^[\w.@+-]+\Z')
+    email = serializers.EmailField(
+        max_length = 254,)
+
     class Meta:
         model = User
         fields = ('email', 'username')
 
     def validate(self, data):
-        if data.get('username') != 'me':
-            return data
-        raise serializers.ValidationError(
-            'Поменяйте имя'
-        )
+        if data.get('username') == 'me':
+            raise serializers.ValidationError('Поменяйте имя')
+        return data
 
 
 class TokenSerializer(serializers.ModelSerializer):

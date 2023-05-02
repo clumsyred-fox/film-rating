@@ -1,8 +1,10 @@
 from django.db.models import Avg
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings 
 from django.core.mail import send_mail
+from django.views.decorators.http import require_http_methods
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -36,17 +38,21 @@ class SignInView(APIView):
     def post(self, request):
         serializer = SignInSerializer(data=request.data)
         if serializer.is_valid():
-            user, _ = User.objects.get_or_create(username=serializer.validated_data['username'] ,
-                                                 email=serializer.validated_data['email'])
-            confirmation_code = default_token_generator.make_token(user)
-            send_mail(
-                settings.MAIL_SUBJECT,
-                confirmation_code,
-                settings.FROM_EMAIL,
-                [user.email],
-                fail_silently=False)
-            return Response(serializer.data,
-                            status=status.HTTP_200_OK)
+            try:
+                user, _ = User.objects.get_or_create(username=serializer.validated_data['username'] ,
+                                                    email=serializer.validated_data['email'])
+                confirmation_code = default_token_generator.make_token(user)
+                send_mail(
+                    settings.MAIL_SUBJECT,
+                    confirmation_code,
+                    settings.FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False)
+                return Response(serializer.data,
+                                status=status.HTTP_200_OK)
+            except IntegrityError:
+                return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
 
@@ -75,6 +81,8 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [Admin]
+    http_method_names = ['get', 'post', 'head', 'patch', 'delete']
+
     
     @action(
         methods=["GET", "PATCH"],
