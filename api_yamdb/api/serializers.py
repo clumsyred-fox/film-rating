@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 
-from reviews.models import Comment, Review, Title
+from reviews.models import Comment, Review, Title, User
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -44,3 +44,19 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+
+class ObtainTokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=50)
+    confirmation_code = serializers.CharField(max_length=15)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
