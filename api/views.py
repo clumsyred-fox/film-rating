@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
+from .models import CustomUser
 from api.serializers import ObtainTokenSerializer, RegistrationSerializer
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
@@ -16,7 +16,7 @@ class AuthTokenView(APIView):
         if serializer.is_valid():
             username = serializer.data['username']
             confirmation_code = serializer.data['confirmation_code']
-            user = get_object_or_404(User, username=username)
+            user = get_object_or_404(CustomUser, username=username)
             if confirmation_code != user.confirmation_code:
                 return Response(
                     serializer.errors,
@@ -40,7 +40,7 @@ class SignUpView(APIView):
             email = serializer.validated_data.get('email')
             username = serializer.validated_data.get('username')
             confirmation_code = default_token_generator.make_token(username)
-            User.objects.create_user(
+            CustomUser.objects.create_user(
                 username=username,
                 email=email,
                 confirmation_code=confirmation_code
