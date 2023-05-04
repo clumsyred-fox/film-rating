@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from api.views import CategoryViewSet, GenreViewSet, TitleGETViewSet
+from api.views import CategoryViewSet, GenreViewSet, TitleGETViewSet, SignUpView, AuthTokenView
 
 router_v1 = DefaultRouter()
 router_v1.register('category', CategoryViewSet, basename='category')
@@ -14,6 +14,5 @@ v1_patterns = [
 ]
 urlpatterns = [
     path('v1/', include(v1_patterns)),
-    path('auth/signup/', SignUpAPI.as_view(), name='signup'),
-    path('auth/token/', GetTokenAPI.as_view(), name='token'),
-]
+    path('auth/signup/', SignUpView.as_view(), name='signup'),
+    path('auth/token/', AuthTokenView.as_view(), name='token'),]
