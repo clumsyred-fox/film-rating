@@ -10,6 +10,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 
 
 class CustomUser(AbstractUser):
+    """ Кастомная модель пользователя. """
     CHOICES = (
         ('USER', 'User'),
         ('ADMIN', 'Admin'),
@@ -46,6 +47,7 @@ class CustomUser(AbstractUser):
 
 
 class Category(models.Model):
+    """ Модель категорий. """
     name = models.CharField(max_length=256)
     slug = models.SlugField(
         max_length=50,
@@ -69,6 +71,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
+    """ Модель для жанров. """
     name = models.CharField(max_length=256)
     slug = models.SlugField(
         max_length=50,
@@ -92,6 +95,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """ Модель для произведений. """
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -129,6 +133,7 @@ class Title(models.Model):
 
 
 class Review(models.Model):
+    """ Модель для отзывов. """
     title = models.ForeignKey(
         Title,
         verbose_name='Произведение',
@@ -169,6 +174,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
+    """ Модель комментариев. """
     review = models.ForeignKey(
         Review,
         verbose_name='Отзыв',
