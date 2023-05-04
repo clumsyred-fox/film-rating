@@ -46,6 +46,9 @@ class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ("name",)
+    lookup_field = "slug"
 
 
 class GenreViewSet(CreateListDestroyViewSet):
@@ -120,20 +123,44 @@ class AuthTokenView(APIView):
 
 class SignUpView(APIView):
     permission_classes = [AllowAny]
+    # def post(self, request):
+    #     serializer = RegistrationSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save()
+    #     user = get_object_or_404(CustomUser, username=serializer.validated_data["username"])
+    #     confirmation_code = default_token_generator.make_token(user)
+    #     send_mail(
+    #         'Подтверждение регистрации на YAMDB',
+    #         f'Код подтверждения: {confirmation_code}',
+    #         from_email=FROM_EMAIL,
+    #         recipient_list=[user.email],
+    #         fail_silently=False,
+    #     )
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        user = get_object_or_404(CustomUser, username=serializer.validated_data["username"])
-        confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            'Подтверждение регистрации на YAMDB',
-            f'Код подтверждения: {confirmation_code}',
-            from_email=FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
+        if serializer.is_valid():
+            serializer.save()
+            user = get_object_or_404(CustomUser, username=request.data.get('username'))
+            confirmation_code = default_token_generator.make_token(user)
+            user.confirmation_code = confirmation_code
+            user.save()
+
+            send_mail(
+                'Подтверждение регистрации на YAMDB',
+                f'Код подтверждения: {confirmation_code}',
+                from_email=FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
         )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
