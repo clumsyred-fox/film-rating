@@ -2,8 +2,9 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.validators import UniqueValidator
+from django.core.validators import RegexValidator
 
-from reviews.models import Comment, Review, Title, Category, Genre, CustomUser
+from reviews.models import Comment, Review, Title, Category, Genre, User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -96,46 +97,48 @@ class CommentSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[
-            UniqueValidator(queryset=CustomUser.objects.all())
+            UniqueValidator(queryset=User.objects.all())
         ],
         required=True,
     )
     email = serializers.EmailField(
         validators=[
-            UniqueValidator(queryset=CustomUser.objects.all())
+            UniqueValidator(queryset=User.objects.all())
         ]
     )
 
     class Meta:
+        
+        model = User
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
-        model = CustomUser
 
 
 class UserEditSerializer(serializers.ModelSerializer):
     class Meta:
+        model = User
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
-        model = CustomUser
         read_only_fields = ('role',)
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[
-            UniqueValidator(queryset=CustomUser.objects.all())
+            UniqueValidator(queryset=User.objects.all()),
+            RegexValidator(regex=r'^[\w.@+-]+\Z'),
         ]
     )
     email = serializers.EmailField(
         validators=[
-            UniqueValidator(queryset=CustomUser.objects.all())
+            UniqueValidator(queryset=User.objects.all())
         ]
     )
 
     def validate_username(self, value):
         if value.lower() == 'me':
             raise serializers.ValidationError("Username 'me' is not valid")
-        if len(value) > 150 or value != r'^[-a-zA-Z0-9_]+$':
+        elif len(value) > 150:
             raise serializers.ValidationError('Измените имя пользователя.')
         return value
     
@@ -146,10 +149,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
     
 
     class Meta:
+        model = User
         fields = ("username", "email")
-        model = CustomUser
 
 
 class ObtainTokenSerializer(serializers.Serializer):
     username = serializers.CharField()
-    confirmation_code = serializers.CharField()
+    confirmation_code = serializers.CharField(max_length=255)

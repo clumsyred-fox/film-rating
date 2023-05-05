@@ -3,7 +3,7 @@ from rest_framework.mixins import (ListModelMixin,
                                    DestroyModelMixin
                                    )
 from django_filters.rest_framework import DjangoFilterBackend
-
+from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from .filter import TitlesFilter
@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 
 from rest_framework.viewsets import GenericViewSet
 from .serializers import (CategorySerializer,
@@ -28,7 +29,7 @@ from .serializers import (CategorySerializer,
                           UserEditSerializer, 
                           )
 from api_yamdb.settings import FROM_EMAIL
-from reviews.models import Category, Genre, Review, Title, CustomUser
+from reviews.models import Category, Genre, Review, Title, User
 from .permissions import (IsAdminModeratorOwnerOrReadOnly,
                           IsAdminOrReadOnly, IsAdmin)
 
@@ -63,11 +64,12 @@ class GenreViewSet(CreateListDestroyViewSet):
 
 class TitleGETViewSet(viewsets.ModelViewSet):
     """ Вьюсет для Произведений. """
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__rating'))
     serializer_class = TitleGETSerializer
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitlesFilter
+    pagination_class = LimitOffsetPagination
 
 
     def get_serializer_class(self):
@@ -112,7 +114,7 @@ class AuthTokenView(APIView):
     def post(request):
         serializer = ObtainTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = get_object_or_404(CustomUser, username=serializer.validated_data["username"])
+        user = get_object_or_404(User, username=serializer.validated_data["username"])
 
         if default_token_generator.check_token(
             user, serializer.validated_data["confirmation_code"]):
@@ -123,6 +125,7 @@ class AuthTokenView(APIView):
 
 class SignUpView(APIView):
     permission_classes = [AllowAny]
+
     # def post(self, request):
     #     serializer = RegistrationSerializer(data=request.data)
     #     serializer.is_valid(raise_exception=True)
@@ -137,11 +140,12 @@ class SignUpView(APIView):
     #         fail_silently=False,
     #     )
     #     return Response(serializer.data, status=status.HTTP_200_OK)
+    
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
-            user = get_object_or_404(CustomUser, username=request.data.get('username'))
+            user = get_object_or_404(User, username=request.data.get('username'))
             confirmation_code = default_token_generator.make_token(user)
             user.confirmation_code = confirmation_code
             user.save()
@@ -156,14 +160,15 @@ class SignUpView(APIView):
                 serializer.data,
                 status=status.HTTP_200_OK
             )
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )   
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
     filter_backends = (filters.SearchFilter,)

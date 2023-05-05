@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -9,7 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 # Custom User Model
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     """ Кастомная модель пользователя. """
     ADMIN = 'admin'
     MODERATOR = 'moderator'
@@ -20,21 +20,10 @@ class CustomUser(AbstractUser):
         (USER, 'User'),
     ]
 
-    username_validator = RegexValidator(
-        r'^[\\w.@+-]+\\z'
-        'Required. 150 characters or fewer.'
-        'Letters, digits and @/./+/-/_ only.'
-    )
     username = models.CharField(
         verbose_name='Никнейм',
         max_length=150,
         unique=True,
-        help_text=(
-            'Required. 150 characters or fewer.'
-            'Letters, digits and @/./+/-/_ only.'
-        ),
-        validators=[username_validator],
-        error_messages={'unique': 'User with that username already exists.'},
     )
     bio = models.TextField(max_length=250, verbose_name='Биография')
     role = models.CharField(
@@ -43,7 +32,7 @@ class CustomUser(AbstractUser):
         choices=CHOICES,
         default='USER',
     )
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField(verbose_name='email', max_length=254, unique=True)
     
     @property
     def is_moderator(self):
@@ -164,7 +153,7 @@ class Review(models.Model):
         verbose_name='Текст',
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         verbose_name='Автор',
         on_delete=models.CASCADE,
         related_name='reviews'
@@ -192,6 +181,8 @@ class Review(models.Model):
             ),
         ]
 
+    def __str__(self):
+        return self.text[:15]
 
 class Comment(models.Model):
     """ Модель комментариев. """
@@ -205,7 +196,7 @@ class Comment(models.Model):
         verbose_name='Текст',
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
         related_name='comments'
@@ -219,3 +210,7 @@ class Comment(models.Model):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ['pub_date']
+
+    def __str__(self):
+        return self.text[:15]
+        
