@@ -1,3 +1,5 @@
+"""App settings."""
+
 import os
 from pathlib import Path
 import datetime
@@ -20,7 +22,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'django_filters',
-
     'reviews',
     'api',
 ]
