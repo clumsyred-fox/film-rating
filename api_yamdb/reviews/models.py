@@ -4,6 +4,7 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """ Модель пользователя. """
     ADMIN = 'admin'
     MODERATOR = 'moderator'
     USER = 'user'
@@ -32,7 +33,7 @@ class User(AbstractUser):
         max_length=150,
         blank=True,
         null=True)
-    
+
     @property
     def is_admin(self):
         return self.role == self.ADMIN
@@ -55,7 +56,9 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+
 class Category(models.Model):
+    """ Модель категорий. """
     name = models.CharField(
         max_length=256,
         verbose_name="Категория",)
@@ -63,13 +66,15 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
         ordering = ['name']
 
+
 class Genre(models.Model):
+    """ Модель жанров. """
     name = models.CharField(
         max_length=256,
         verbose_name="Жанр",)
@@ -77,7 +82,7 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
@@ -85,6 +90,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
+    """ Модель произведений. """
     name = models.CharField(
         max_length=200,
         verbose_name="Название",)
@@ -109,9 +115,10 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 
 class Review(models.Model):
+    """ Модель отзывов. """
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -137,6 +144,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
+    """ Модель комментариев. """
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name="comments")
     text = models.TextField("Текст")
