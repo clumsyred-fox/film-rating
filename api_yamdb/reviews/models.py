@@ -56,18 +56,20 @@ class User(AbstractUser):
         return self.username
 
 
-class Category(models.Model):
-    """Модель категорий."""
-
-    name = models.CharField(
-        max_length=256,
-        verbose_name="Категория",
-    )
+class BaseCategory(models.Model):
+    """Базовая модель для категории и жанра"""
+    name = models.CharField(max_length=256, verbose_name="Название")
     slug = models.SlugField(unique=True)
 
     def __str__(self):
-        """Self Category."""
         return self.name
+
+    class Meta:
+        abstract = True
+
+
+class Category(BaseCategory):
+    """Модель категорий."""
 
     class Meta:
         """Category Meta."""
@@ -77,18 +79,8 @@ class Category(models.Model):
         ordering = ["name"]
 
 
-class Genre(models.Model):
+class Genre(BaseCategory):
     """Модель жанров."""
-
-    name = models.CharField(
-        max_length=256,
-        verbose_name="Жанр",
-    )
-    slug = models.SlugField(unique=True)
-
-    def __str__(self):
-        """Self Genre."""
-        return self.name
 
     class Meta:
         """Genre Meta."""

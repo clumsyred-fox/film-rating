@@ -15,8 +15,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title, User
 
 from .filters import TitlesFilter
-from .permissions import Admin, AdminModerAuthorReadOnly, AdminReadOnly
-from .serializers import (
+from api.permissions import Admin, AdminModerAuthorReadOnly, AdminReadOnly
+from api.serializers import (
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
@@ -35,8 +35,6 @@ class GetPostDeleteViewSet(
     viewsets.GenericViewSet,
 ):
     """Custom mixin."""
-
-    pass
 
 
 class SignInView(APIView):
@@ -160,12 +158,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """GET review."""
-        title = get_object_or_404(Title, id=self.kwargs.get("title_id"))
+        title = get_object_or_404(Title, pk=self.kwargs.get("title_id"))
         return title.reviews.all()
 
     def perform_create(self, serializer):
         """CREATE review."""
-        title = get_object_or_404(Title, id=self.kwargs.get("title_id"))
+        title = get_object_or_404(Title, pk=self.kwargs.get("title_id"))
         serializer.save(author=self.request.user, title=title)
 
 
@@ -177,10 +175,10 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """GET comment."""
-        review = get_object_or_404(Review, id=self.kwargs.get("review_id"))
+        review = get_object_or_404(Review, pk=self.kwargs.get("review_id"))
         return review.comments.all()
 
     def perform_create(self, serializer):
         """CREATE comment."""
-        review = get_object_or_404(Review, id=self.kwargs.get("review_id"))
+        review = get_object_or_404(Review, pk=self.kwargs.get("review_id"))
         serializer.save(author=self.request.user, review=review)

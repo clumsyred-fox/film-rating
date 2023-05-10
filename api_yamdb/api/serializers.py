@@ -144,7 +144,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         """Review valid."""
         title_id = self.context["view"].kwargs.get("title_id")
         author = self.context.get("request").user
-        title = get_object_or_404(Title, id=title_id)
+        title = get_object_or_404(Title, pk=title_id)
         if (
             title.reviews.filter(author=author).exists()
             and self.context.get("request").method != "PATCH"
