@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title, User
 
-from .filters import TitlesFilter
+from api.filters import TitlesFilter
 from api.permissions import Admin, AdminModerAuthorReadOnly, AdminReadOnly
 from api.serializers import (
     CategorySerializer,
@@ -49,18 +49,18 @@ class SignInView(APIView):
                     username=serializer.validated_data["username"],
                     email=serializer.validated_data["email"],
                 )
-                confirmation_code = default_token_generator.make_token(user)
-                send_mail(
-                    settings.MAIL_SUBJECT,
-                    confirmation_code,
-                    settings.FROM_EMAIL,
-                    [user.email],
-                    fail_silently=False,
-                )
-                return Response(serializer.data, status=status.HTTP_200_OK)
             except IntegrityError:
                 return Response(serializer.errors,
                                 status=status.HTTP_400_BAD_REQUEST)
+            confirmation_code = default_token_generator.make_token(user)
+            send_mail(
+                settings.MAIL_SUBJECT,
+                confirmation_code,
+                settings.FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
